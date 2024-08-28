@@ -1,6 +1,8 @@
 # Changelog
 
 ## [Unreleased]
+- Added in `manwhaCtrl.js` under `controller` folder
+- Created `Manwha.js underneath` under `models` folder
 - Resolved server startup error by changing the listening port to 5001 in the `.env` file to avoid the EADDRINUSE error.
 - Corrected a typo in `authorController.js` from `createAuthors` to `createAuthor` for consistent naming and proper module exports.
 - Integrated controller functions into `authorRoutes.js` for CRUD operations, linking routes to their respective controller functions for creating, reading, updating, and deleting authors.
