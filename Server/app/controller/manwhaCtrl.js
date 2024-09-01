@@ -1,15 +1,15 @@
-const Manwha = require('../models/manwha')  // Ensure this points to the correct location of your Manwha model
+const Manwha = require('../models/manwha');
+const authors = require('../models/Authors');
 
-// Retrieve all Manwhas
-const getAllManwhas = async (req, res) => {
+const getManwhas = async (req, res) => {
     try {
         const manwhas = await Manwha.find({});
         res.status(200).json({
             data: manwhas,
             success: true,
-            message: "All manwhas retrieved successfully"
+            message: `${req.method} - Manwha request successful`
         });
-    } catch (error) {
+    } catch ({ message}) {
         res.status(500).json({
             success: false,
             message: "Failed to retrieve manwhas: " + error.message
@@ -17,51 +17,68 @@ const getAllManwhas = async (req, res) => {
     }
 };
 
-// Retrieve a single Manwha by ID
 const getManwhaByID = async (req, res) => {
     try {
-        const manwha = await Manwha.findById(req.params.id);
+        const { id } = req.params;
+        const manwha = await Manwha.findById(id).populate('author');
+
         if (!manwha) {
-            return res.status(404).json({
-                success: false,
-                message: "Manwha not found"
-            });
+            return res
+                .status(404)  // Changed to 404 as it's more appropriate for not found resources
+                .json({ success: false, message: "Manwha not found" });
         }
         res.status(200).json({
             data: manwha,
             success: true,
-            message: "Manwha retrieved successfully"
+            message: `${req.method} - Manwha request successful`
         });
-    } catch (error) {
+    } catch ({message}) {
         res.status(500).json({
             success: false,
-            message: "Error retrieving manwha: " + error.message
+            message,
         });
     }
 };
 
-// Create a new Manwha
 const createManwha = async (req, res) => {
     try {
-        const newManwha = await Manwha.create(req.body);
-        res.status(201).json({
-            data: newManwha,
-            success: true,
-            message: "Manwha created successfully"
-        });
-    } catch (error) {
-        res.status(500).json({
-            success: false,
-            message: "Failed to create manwha: " + error.message
-        });
-    }
-};
+        //const manwhaData = await Manwha.create(Manwha);
+        const {manwha} = req.body;
+        //manwha.author > is the _id for the author model;
+        //'66d28d8d9b40f33f58cac501' > is the _id for the author model;
+        const user = await Authors.findById(book.author);
+        //attaching the actual author object to the manwha
+        manwha.auhtor = user;
+        // creates a new manwha model
+        const manwhaData = new Manwha(manwha);
+        // push the manwha id to the user.manwhas array
+        user.manwhas.push(manwhaData._id);
+        // saves the manwha and the user data
+        const queries = [manwhaData.save(), user.save()];
+        await Promise.all(queries);
 
-// Update a Manwha
+        // const { author, ...manwhaOnly } = manwhaData._doc;
+        // console.log('>>>', manwhaOnly);
+
+        res.status(200).json({
+            data: manwhaData,
+            success: true,
+            message: `${req.method} - Manwha request made`
+        });
+        } catch (error) {
+            res.status(500).json({
+                success: false,
+                message,
+            });
+        }
+    };
+;
+
 const updateManwha = async (req, res) => {
     try {
         const { id } = req.params;
-        const manwha = await Manwha.findByIdAndUpdate(id, req.body, { new: true });
+        const updates = req.body;
+        const manwha = await Manwha.findByIdAndUpdate(id, updates, { new: true });
         if (!manwha) {
             return res.status(404).json({
                 success: false,
@@ -81,7 +98,6 @@ const updateManwha = async (req, res) => {
     }
 };
 
-// Delete a Manwha
 const deleteManwha = async (req, res) => {
     try {
         const { id } = req.params;
@@ -105,7 +121,7 @@ const deleteManwha = async (req, res) => {
 };
 
 module.exports = {
-    createManwha,  
+    createManwha,
     getAllManwhas,
     getManwhaByID,
     updateManwha,

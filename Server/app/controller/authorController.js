@@ -41,16 +41,16 @@ const getAuthorByID = async (req, res) => {
 const createAuthor = async (req, res) => {
     try {
         const { author } = req.body;
-        const newAuthor = await Authors.create(author);
+        const newAuthor = await Author.create(author);  // Assuming the model is named 'Author'
         res.status(201).json({
             data: newAuthor,
             success: true,
-            message: "Author created successfully"
+            message: `${req.method} - Author created successfully`
         });
     } catch (error) {
         res.status(500).json({
             success: false,
-            message: "Failed to create author: " + error.message
+            message: `Failed to create author: ${error.message}`
         });
     }
 };
